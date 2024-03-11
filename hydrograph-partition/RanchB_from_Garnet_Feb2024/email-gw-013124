@@ -1,0 +1,13 @@
+From 01.31.24
+
+Hi Megan,
+
+No problem. I actually did most of the separation in excel and only used r to plot the hydrograph with new water underneath it. Sorry the code isn't much help but there is a plotly part which is pretty cool to look at. I also only did d18O for this one and used: 
+
+%NW= Q at Point * (Point-Baseflow)/(Snowmelt-Baseflow)
+
+where point is any point on the hydrograph and baseflow was the least negative value for that event at the start. I'm more than happy to clarify anything as well, it's a mess. I look forward to meeting you too and maybe chatting about some soil stuff I'm working on.
+
+Respectfully,
+Garnet
+
