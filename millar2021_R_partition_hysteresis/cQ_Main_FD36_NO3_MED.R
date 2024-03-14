@@ -17,8 +17,8 @@ library(viridis)
 ###################
 
 # Define the input directory
-input_dir <- "C:\\...."
-output_dir <- "C:\\...."
+input_dir <- "/home/millieginty/Documents/git-repos/cQ_analysis/millar2021_R_partition_hysteresis/"
+output_dir <- "/home/millieginty/Documents/git-repos/cQ_analysis/millar2021_R_partition_hysteresis/output/"
 
 #####################
 # READ IN FUNCTIONS #
