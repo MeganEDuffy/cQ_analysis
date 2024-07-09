@@ -614,7 +614,7 @@ stormEventCalcs <- function(batchRun,
         start <- as.character(min(batchRun[[i]][["fullStorms"]][[j]]$datetime))
         end <- as.character(max(batchRun[[i]][["fullStorms"]][[j]]$datetime))
         tot_q_m3 <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow*60*timestep_min))
-        tot_constit_mgN <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow * batchRun[[i]][["fullStorms"]][[j]]$conc * 60 * timestep_min)) # MED addition
+        tot_constit_mgN <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow * batchRun[[i]][["fullStorms"]][[j]]$conc * 1000 * 60 * timestep_min)) # MED addition
         duration_hrs <- timestep_min*nrow(batchRun[[i]][["fullStorms"]][[j]])/60
         intensity_m3_hr <- tot_q_m3/duration_hrs
         filter_para <- batchRun1[[i]][["fullStorms"]][[j]]$filter_para[1]
