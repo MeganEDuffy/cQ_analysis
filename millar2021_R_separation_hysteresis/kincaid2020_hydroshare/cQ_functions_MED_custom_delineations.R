@@ -325,7 +325,8 @@ batchRunBfAndEvSepForCQ <- function(qInputs,
                                     cInputs,
                                     timeStep,
                                     minDuration,
-                                    maxDuration) {
+                                    maxDuration,
+                                    eventInputs) {
   
   #---------#
   # Inputs: # 
@@ -348,6 +349,8 @@ batchRunBfAndEvSepForCQ <- function(qInputs,
   # minDuration = the minimum storm duration to be stored in output (hours)
   
   # maxDuration = the maximum storm duration to be stored in output (hours)
+
+  # eventInputs = dataframe from orginal custom event delineations # MED addition
   
   #----------#
   # Outputs: # 
