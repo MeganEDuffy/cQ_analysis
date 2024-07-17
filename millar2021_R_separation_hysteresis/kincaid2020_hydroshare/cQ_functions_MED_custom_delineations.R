@@ -326,7 +326,7 @@ batchRunBfAndEvSepForCQ <- function(qInputs,
                                     timeStep,
                                     minDuration,
                                     maxDuration,
-                                    eventInputs) {
+                                    eventInputs) { # MED addition
   
   #---------#
   # Inputs: # 
@@ -350,7 +350,7 @@ batchRunBfAndEvSepForCQ <- function(qInputs,
   
   # maxDuration = the maximum storm duration to be stored in output (hours)
 
-  # eventInputs = dataframe from orginal custom event delineations # MED addition
+  # eventInputs = list created from orginal custom event delineations # MED addition
   
   #----------#
   # Outputs: # 
@@ -581,20 +581,23 @@ stormCounts <- function(batchRun) {
 #===================================================================#
 
 stormEventCalcs <- function(batchRun,
-                            timestep_min) {
+                            timestep_min,
+                            Area) { # MED addition
   
   #---------#
   # Inputs: # 
   #---------#
   
   # batchRun = list created by running the 'batchRunBfAndEvSepForCQ' function
+
+  # Area = area of watershed as defined by user # MED addition
   
   #----------#
   # Outputs: # 
   #----------#
   
-  # eventsData = dataframe containing storm event duration, total discharge, and
-  #                 discharge intensity
+  # eventsData = dataframe containing storm event duration, total discharge, 
+  #                 discharge intensity, and event water and constituent yields
   
   eventsData <- cbind.data.frame(run_id = character(0),
                                  start = character(0),
@@ -602,6 +605,8 @@ stormEventCalcs <- function(batchRun,
                                  tot_q_m3 = numeric(0),
                                  tot_constit_mgN = numeric(0), # MED addition
                                  duration_hrs = numeric(0),
+                                 water_yield_mm = numeric(0),  # MED addition
+                                 constit_yield_mm = numeric(0), # MED addition
                                  intensity_m3_hr = numeric(0),
                                  filter_para = character(0),
                                  sf_thresh = character(0))
@@ -615,10 +620,14 @@ stormEventCalcs <- function(batchRun,
         run_id <- names(batchRun[i])
         storm_id <- paste("storm_",as.character(j),sep="")
         start <- as.character(min(batchRun[[i]][["fullStorms"]][[j]]$datetime))
+        start <- as.character(min(batchRun[[i]][["fullStorms"]][[j]]$datetime)) 
         end <- as.character(max(batchRun[[i]][["fullStorms"]][[j]]$datetime))
+        end <- as.character(max(batchRun[[i]][["fullStorms"]][[j]]$datetime)) 
         tot_q_m3 <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow*60*timestep_min))
         tot_constit_mgN <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow * batchRun[[i]][["fullStorms"]][[j]]$conc * 1000 * 60 * timestep_min)) # MED addition
         duration_hrs <- timestep_min*nrow(batchRun[[i]][["fullStorms"]][[j]])/60
+        water_yield_mm <- tot_q_m3 / (Area * 10^6) * 1000 # MED addition
+        constit_yield_mm <- tot_constit_mgN / (Area * 10^6) # MED addition
         intensity_m3_hr <- tot_q_m3/duration_hrs
         filter_para <- batchRun1[[i]][["fullStorms"]][[j]]$filter_para[1]
         sf_thresh <- batchRun[[i]][["fullStorms"]][[j]]$sf_thresh[1]
@@ -630,6 +639,8 @@ stormEventCalcs <- function(batchRun,
                                      tot_q_m3,
                                      tot_constit_mgN, # MED addition
                                      duration_hrs,
+                                     water_yield_mm, # MED addition
+                                     constit_yield_mm,
                                      intensity_m3_hr,
                                      filter_para,
                                      sf_thresh)
@@ -643,6 +654,75 @@ stormEventCalcs <- function(batchRun,
   return(eventsData)
 }
 
+
+#======================================================================#  # MED addition
+# (9.5 ) Calculate total discharge, duration, and discharge intensity  #
+#     for every storm event in a custom event sequence (not RDF)       #
+#======================================================================#
+
+stormEventCalcsCustom <- function(timestep_min, eventInputs) {
+
+  #---------#
+  # Inputs: # 
+  #---------#
+
+  # eventInputs = list created from orginal custom event delineations # MED addition
+  
+  #----------#
+  # Outputs: # 
+  #----------#
+  
+  # eventsDataCustom = dataframe containing storm event duration, total discharge, and
+  #                 discharge intensity
+  
+  # Initialize the output dataframe
+  eventsDataCustom <- data.frame(
+    storm_id = character(),
+    start = character(),
+    end = character(),
+    tot_q_m3 = numeric(),
+    tot_constit_mgN = numeric(),
+    duration_hrs = numeric(),
+    intensity_m3_hr = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  # Iterate over each storm event in the list
+  for (i in seq_along(eventInputs)) {
+    
+    # Extract the current storm event dataframe
+    storm_df <- eventInputs[[i]]
+    
+    # Check if storm_df is a dataframe and has rows
+    if (is.data.frame(storm_df) && nrow(storm_df) > 0) {
+      
+      storm_id <- names(eventInputs)[i]
+      start <- as.character(min(storm_df$datetime))
+      end <- as.character(max(storm_df$datetime))
+      tot_q_m3 <- sum(storm_df$q_cms * 60 * timestep_min)
+      tot_constit_mgN <- sum(storm_df$q_cms * storm_df$conc * 1000 * 60 * timestep_min)
+      duration_hrs <- timestep_min * nrow(storm_df) / 60
+      intensity_m3_hr <- tot_q_m3 / duration_hrs
+      
+      # Create a row for the calculated metrics
+      eventRow <- data.frame(
+        storm_id = storm_id,
+        start = start, 
+        end = end, 
+        tot_q_m3 = tot_q_m3,
+        tot_constit_mgN = tot_constit_mgN,
+        duration_hrs = duration_hrs,
+        intensity_m3_hr = intensity_m3_hr,
+        stringsAsFactors = FALSE
+      )
+      
+      # Append the row to the output dataframe
+      eventsDataCustom <- bind_rows(eventsData, eventRow)
+    }
+  }
+  
+  return(eventsDataCustom)
+}
 
 #=======================================================================#
 # (10) Get hysteresis indices (HI) by interpolating normalized c-Q data #
