@@ -619,9 +619,7 @@ stormEventCalcs <- function(batchRun,
         
         run_id <- names(batchRun[i])
         storm_id <- paste("storm_",as.character(j),sep="")
-        start <- as.character(min(batchRun[[i]][["fullStorms"]][[j]]$datetime))
         start <- as.character(min(batchRun[[i]][["fullStorms"]][[j]]$datetime)) 
-        end <- as.character(max(batchRun[[i]][["fullStorms"]][[j]]$datetime))
         end <- as.character(max(batchRun[[i]][["fullStorms"]][[j]]$datetime)) 
         tot_q_m3 <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow*60*timestep_min))
         tot_constit_mgN <- sum((batchRun[[i]][["fullStorms"]][[j]]$smooth_st_flow * batchRun[[i]][["fullStorms"]][[j]]$conc * 1000 * 60 * timestep_min)) # MED addition
@@ -640,7 +638,7 @@ stormEventCalcs <- function(batchRun,
                                      tot_constit_mgN, # MED addition
                                      duration_hrs,
                                      water_yield_mm, # MED addition
-                                     constit_yield_mm,
+                                     constit_yield_mm, # MED addition
                                      intensity_m3_hr,
                                      filter_para,
                                      sf_thresh)
@@ -683,6 +681,8 @@ stormEventCalcsCustom <- function(timestep_min, eventInputs) {
     tot_q_m3 = numeric(),
     tot_constit_mgN = numeric(),
     duration_hrs = numeric(),
+    water_yield_mm = numeric(0),  
+    constit_yield_mm = numeric(0), 
     intensity_m3_hr = numeric(),
     stringsAsFactors = FALSE
   )
@@ -702,22 +702,26 @@ stormEventCalcsCustom <- function(timestep_min, eventInputs) {
       tot_q_m3 <- sum(storm_df$q_cms * 60 * timestep_min)
       tot_constit_mgN <- sum(storm_df$q_cms * storm_df$conc * 1000 * 60 * timestep_min)
       duration_hrs <- timestep_min * nrow(storm_df) / 60
+      water_yield_mm <- tot_q_m3 / (Area * 10^6) * 1000 
+      constit_yield_mm <- tot_constit_mgN / (Area * 10^6) 
       intensity_m3_hr <- tot_q_m3 / duration_hrs
       
       # Create a row for the calculated metrics
-      eventRow <- data.frame(
+      eventRowCustom <- data.frame(
         storm_id = storm_id,
         start = start, 
         end = end, 
         tot_q_m3 = tot_q_m3,
         tot_constit_mgN = tot_constit_mgN,
         duration_hrs = duration_hrs,
+        water_yield_mm = water_yield_mm,
+        constit_yield_mm = constit_yield_mm,
         intensity_m3_hr = intensity_m3_hr,
         stringsAsFactors = FALSE
       )
       
       # Append the row to the output dataframe
-      eventsDataCustom <- bind_rows(eventsData, eventRow)
+      eventsDataCustom <- bind_rows(eventsDataCustom, eventRowCustom)
     }
   }
   
