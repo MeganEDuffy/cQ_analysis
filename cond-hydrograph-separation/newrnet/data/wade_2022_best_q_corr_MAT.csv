@@ -1,4 +1,4 @@
-hobo_stage,stage,r_timestamp,power_q,radius,area,int_or_ext,mannings_q,best_q
+hobo_stage,stage,timestamp,power_q,radius,area,int_or_ext,mannings_q,best_q
 0.3890525,0.6107685,1/26/22 13:30,0.109491183,8.271537,4.305917925,interpolated,2.030231258,0.109491183
 0.3847577,0.6064737,1/26/22 13:45,0.09974903,8.2629474,4.275639585,interpolated,2.014559193,0.09974903
 0.3847577,0.6064737,1/26/22 14:00,0.09974903,8.2629474,4.275639585,interpolated,2.014559193,0.09974903
