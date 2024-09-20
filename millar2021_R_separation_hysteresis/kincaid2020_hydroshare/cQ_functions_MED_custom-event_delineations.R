@@ -427,6 +427,132 @@ batchRunBfAndEvSepForCQ <- function(qInputs,
 
 
 #========================#
+# (5.5) MED addition     #
+# For custom events      #
+#========================#
+
+batchRunBfAndEvSepForCQCustom <- function(qInputs,
+                                           bfSepPasses,
+                                           filterParam,
+                                           sfSmoothPasses,
+                                           sfThresh,
+                                           cInputs,
+                                           timeStep,
+                                           minDuration,
+                                           maxDuration,
+                                           eventInputs) {
+  
+  #---------#
+  # Inputs: #
+  #---------#
+  
+  # qInputs = dataframe with the original time series discharge data
+  
+  # bfSepPasses = number of passes to use with recursive filter for bf separation
+  
+  # filterParam = vector containing filter coefficient values to use for bf separation
+  
+  # sfSmoothPasses = number of passes to use for the stormflow smoothing filter
+  
+  # sfThresh = vector containing stormflow threshold values (same flow units as qData)
+  
+  # cInputs = time series solute concentration data at same time steps as qData
+  
+  # timeStep = time step of the input data (minutes)
+  
+  # minDuration = the minimum storm duration to be stored in output (hours)
+  
+  # maxDuration = the maximum storm duration to be stored in output (hours)
+  
+  # eventInputs = dataframe containing custom event start and end datetimes # MED addition
+  
+  #----------#
+  # Outputs: #
+  #----------#
+  
+  # batchOutputsCustom = a list of length equal to: length(filterParam)*length(sfThresh),
+  #                      where each element is its own list containing 3 lists:
+  #
+  #             - fullStorms: a list of individual storm events with observed 
+  #                           and normalized discharge and concentration
+  #
+  #             - risingLimbs: a list of individual storm rising limbs-only
+  #
+  #             - fallingLimbs: a list of individual storm falling limbs-only
+  
+  batchOutputsCustom <- list()
+  
+  filterCoefCol <- rep(filterParam, length(sfThresh))
+  sfThreshCol <- rep(sfThresh, each = length(filterParam))
+  
+  inputParas <- data.frame(filter_para = filterCoefCol, sf_threshhold = sfThreshCol)
+  
+  for (i in 1:nrow(inputParas)) {
+    
+    filterParaValue <- inputParas$filter_para[i]
+    sfThreshValue <- inputParas$sf_threshhold[i]
+    
+    paraCombo <- paste("FC = ", as.character(filterParaValue), ", SFT = ", as.character(sfThreshValue), sep = "")
+    
+    baseFlow <- baseflowSeparation(datetime = qInputs$datetime,
+                                   streamflow = qInputs$q_cms,
+                                   filterPara = filterParaValue,
+                                   passes = bfSepPasses)
+    
+    smoothStorm <- smoothStormFlow(dateTime = baseFlow$datetime,
+                                   stormFlow = baseFlow$storm_flow,
+                                   totFlow = baseFlow$total_flow,
+                                   passes = sfSmoothPasses)
+    
+    # Loop through custom events from eventInputs
+    fullStorms <- list()
+    risingLimbs <- list()
+    fallingLimbs <- list()
+    
+    for (j in 1:nrow(eventInputs)) {
+      
+      eventID <- paste("event_", as.character(j), "", sep = "")
+      
+      start_date <- eventInputs$start[j]
+      end_date <- eventInputs$end[j]
+      
+      # Subset storm data to custom event period
+      currentEvent <- smoothStorm %>% 
+        filter(datetime >= start_date & datetime <= end_date)
+      
+      strmLngth_hrs <- timeStep * nrow(currentEvent) / 60
+      
+      if (strmLngth_hrs >= minDuration & strmLngth_hrs <= maxDuration) {
+        
+        currentEvent$time_step <- seq(1, nrow(currentEvent), 1)
+        
+        currentEvent <- currentEvent %>%
+          mutate(norm_tot_q = (total_flow - min(total_flow)) / (max(total_flow) - min(total_flow)),
+                 norm_ts = (time_step - min(time_step)) / (max(time_step) - min(time_step)))
+        
+        # Populate fullStorms list
+        fullStorms[[eventID]] <- currentEvent
+        
+        # Populate risingLimbs list (assuming rising limb ends at the midpoint)
+        mid_point <- nrow(currentEvent) %/% 2
+        risingLimbs[[eventID]] <- currentEvent[1:mid_point, ]
+        
+        # Populate fallingLimbs list (from midpoint to end)
+        fallingLimbs[[eventID]] <- currentEvent[(mid_point + 1):nrow(currentEvent), ]
+      }
+    }
+    
+    eventOutputCustom <- list(fullStorms = fullStorms,
+                              risingLimbs = risingLimbs,
+                              fallingLimbs = fallingLimbs)
+    
+    batchOutputsCustom[[paraCombo]] <- eventOutputCustom
+  }
+  
+  return(batchOutputsCustom)
+}
+
+#========================#
 # (6) Get all storm data #
 #========================#
 
