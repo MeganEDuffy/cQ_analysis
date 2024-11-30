@@ -1,18 +1,18 @@
-# Volumetric_Water_Content.VWC_15cm@HD_pit1.20210801.csv generated at 2024-07-10 12:46:40 (UTC-04:00) by AQUARIUS Time-Series 21.3.212.0
-# 
-# Time-series identifier: Volumetric Water Content.VWC_15cm@HD_pit1
-# Location: HD_pit1
-# UTC offset: (UTC-05:00)
-# Value units: %
-# Value parameter: Volumetric Water Content
-# Interpolation type: Instantaneous Values
-# Time-series type: Basic
-# 
-# Export options: Corrected signal from 2021-08-01T05:00:00Z to 2022-08-01T05:00:00Z
-# 
-# CSV data starts at line 15.
-# 
-ISO 8601 UTC,Timestamp (UTC-05:00),Value,Approval Level,Grade,Qualifiers
+# Volumetric_Water_Content.VWC_15cm@HD_pit1.20210801.csv generated at 2024-07-10 12:46:40 (UTC-04:00) by AQUARIUS Time-Series 21.3.212.0,,,,,
+#,,,,,
+# Time-series identifier: Volumetric Water Content.VWC_15cm@HD_pit1,,,,,
+# Location: HD_pit1,,,,,
+# UTC offset: (UTC-05:00),,,,,
+# Value units: %,,,,,
+# Value parameter: Volumetric Water Content,,,,,
+# Interpolation type: Instantaneous Values,,,,,
+# Time-series type: Basic,,,,,
+#,,,,,
+# Export options: Corrected signal from 2021-08-01T05:00:00Z to 2022-08-01T05:00:00Z,,,,,
+#,,,,,
+# CSV data starts at line 15.,,,,,
+#,,,,,
+ISO 8601 UTC,Timestamp,Value,Approval Level,Grade,Qualifiers
 2021-08-01T05:00:00Z,2021-08-01 00:00:00,0.172,Working,0,
 2021-08-01T05:15:00Z,2021-08-01 00:15:00,0.172,Working,0,
 2021-08-01T05:30:00Z,2021-08-01 00:30:00,0.172,Working,0,
